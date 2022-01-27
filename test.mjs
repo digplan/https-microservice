@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { HTTPSServer, HTTPSClient } from "./https-microservice.mjs"
 
 const middleware_debug = (r, s, data) => {
