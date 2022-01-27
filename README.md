@@ -1,4 +1,6 @@
 # https-microservice
+![version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=js&type=6&v=1.0.0&x2=0)
+![size](http://img.badgesize.io/digplan/https-microservice/master/https-microservice.mjs)
 
 Zero config https server
 
