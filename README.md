@@ -10,6 +10,9 @@ Total flexibility. Just put your cert and key in ./keys
 
 Functions run in order and stop when return true
 
+Try
+> npx https-microservice
+
 ````js
 import { HTTPSServer } from "./https-microservice.mjs"
 
