@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { Server, get } from 'node:https';
 
 class HTTPSServer extends Server {
@@ -27,6 +27,16 @@ class HTTPSServer extends Server {
                 });
             });
         });
+        // check middleware directory
+        readdirSync(`${dirname}/middleware`).forEach((f) => {
+            const arrf = []
+            if (f.endsWith('.mjs')) {
+                import(`${dirname}/middleware/${f}`).then((m) => {
+                    arrf.push(m.default);
+                })
+            }
+            this.use(arrf)
+        })
     }
     use(farr) {
         this.middleware = [...farr, (r, s) => s.writeHead(404).end()];

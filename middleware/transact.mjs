@@ -1,3 +1,4 @@
+/*
 const Integrations = {
   "Test": {
     "url": "https://randomuser.me/api?n=5",
@@ -31,3 +32,4 @@ class Transact {
 }
 
 export { Transact }
+*/
