@@ -5,5 +5,5 @@
     "author": "",
     "main": "https-microservice.js",
     "bin": "./test.mjs",
-    "version": "1.0.1"
+    "version": "1.0.2"
 }

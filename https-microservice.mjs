@@ -5,6 +5,8 @@ class HTTPSServer extends Server {
     middleware = [];
     constructor() {
         const dirname = new URL(import.meta.url).pathname.split('/').slice(0, -1).join('/').slice(1)
+        if(process.platform !== 'win32')
+            dirname = '/' + dirname
         super({
             key: readFileSync(`${dirname}/keys/key.pem`),
             cert: readFileSync(`${dirname}/keys/cert.pem`),
