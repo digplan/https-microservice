@@ -2,6 +2,10 @@
 import { Supramap } from './supramap.mjs'
 const m = new Supramap()
 
+// functions
+await m.loadFunctions()
+console.log(m.functions.now())
+
 // .types
 console.log(m.types)
 
@@ -37,3 +41,4 @@ m.save('data/test.json')
 const y = new Supramap()
 y.load('data/test.json')
 console.log(y.json())
+

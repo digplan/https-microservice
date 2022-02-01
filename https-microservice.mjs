@@ -23,6 +23,7 @@ class HTTPSServer extends Server {
                 r.server = this
                 this.middleware.some((f) => {
                     const stop = f(r, s, data);
+                    console.log(f, stop)
                     return stop;
                 });
             });
@@ -38,11 +39,11 @@ class HTTPSServer extends Server {
         for (const model of readdirSync(dirname + '/middleware')) {
             if (!model.endsWith('.mjs')) continue
             let furl = 'file://' + dirname + '/middleware/' + model
-            console.log('loading middleware: ' + furl)
             let f = await import(furl);
             this.middleware.unshift(f.default);
         }
-        this.middleware.push((r, s) => s.writeHead(404).end())
+        let NotFound = (r, s) => s.writeHead(404).end()
+        this.middleware.push(NotFound)
     }
 }
 
