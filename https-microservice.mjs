@@ -23,7 +23,6 @@ class HTTPSServer extends Server {
                 r.server = this
                 this.middleware.some((f) => {
                     const stop = f(r, s, data);
-                    console.log(f, stop)
                     return stop;
                 });
             });

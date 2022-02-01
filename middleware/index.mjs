@@ -8,23 +8,23 @@ function hashpass(pass) {
     return crypto.createHash('sha256').update(hash1).digest('hex')
 }
 
-function api(r,s,data,key) {
+function api(r,s, data, map, key) {
     switch (r.method) {
         case 'GET':
             if (map.has(key))
                 return s.end(map.get[key])
             if (map.functions[key])
-                return s.end(map.functions[key]())
+                return s.end(map.functions[key](map))
         case 'POST':
             if (map.has(data.id))
                 return s.writeHead(500).end('record exists')
-            return s.end(map.set(data.id, body))
+            return s.end(map.set(data.id, data))
         case 'PATCH':
             if (!map.has(data.id))
                 return s.writeHead(500).end('record exists')
-            return s.end(map.set(data.id, body))
+            return s.end(map.set(data.id, data))
         case 'DELETE':
-            return s.end(map.delete(body.id))
+            return s.end(map.delete(data.id))
         case 'PUT':
         // TODO
         default:
@@ -54,13 +54,10 @@ export default function f(r, s, data) {
     */
     if (!r.server.db) {
         const map = new Supramap()
-        map.loadFunctions().then(() => {
-            r.server.db = map
-
-        }))
+        map.loadFunctions()
         r.server.db = map
     }
     let map = r.server.db
     const [, f, key] = r.url.split('/')
-    return api(r, s, data, key)
+    return api(r, s, data, map, key)
 }
