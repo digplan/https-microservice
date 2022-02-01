@@ -10,7 +10,7 @@ function hashpass(pass) {
 
 function Token(r, s) {
     if (r.headers.authorization) {
-        const[type, userpass] = r.headers.authorization.split(' ')
+        const [type, userpass] = r.headers.authorization.split(' ')
         const [user, pass] = Buffer.from(userpass, 'base64').toString('ascii').split(':')
         console.log(user, pass)
 
@@ -28,31 +28,33 @@ function Token(r, s) {
 }
 
 function Api(r, s, data) {
-    if (!r.headers.cookie) return s.writeHead(401).end()
+    if (!r.headers.cookie)
+        return s.writeHead(401).end()
     let cookie = ''
-    for(const c of r.headers.cookie.split(';')) {
-        if(c.startsWith('token=')) {
+    for (const c of r.headers.cookie.split(';')) {
+        if (c.startsWith('token=')) {
             cookie = c.replace('token=', '')
         }
     }
-    console.log(cookie)
-    if(!jwt.verify(cookie))
+    if (!jwt.verify(cookie))
         return s.writeHead(401).end()
 
-  /*
-    https://<endpoint> PUT {name: ...} (Create new db)
-    https://<endpoint>/<table:id> GET (single record)
-    https://<endpoint>/<func> GET (func or all table records)
-    https://<endpoint>/<table:id> [POST, PATCH, DELETE] {id:'someid', field1:'val1'}
-  */
-    const map = r.server.db
-    const [db, table, record] = r.url.split('/')
-    const key = `${table}:${record}`
+    /*
+      https://<endpoint> PUT {name: ...} (Create new db)
+      https://<endpoint>/<table:id> GET (single record)
+      https://<endpoint>/<func> GET (func or all table records)
+      https://<endpoint>/<table:id> [POST, PATCH, DELETE] {id:'someid', field1:'val1'}
+    */
+    const db = r.server.db
+    const [, key] = r.url.split('/')
     switch (r.method) {
         case 'GET':
-            return s.end(map.get[key])
+            if (map.has(key))
+                return s.end(map.get[key])
+            if (db.functions[key])
+                return s.end(db.functions[key](data))
         case 'POST':
-            if(map.has(data.id))
+            if (map.has(data.id))
                 return s.writeHead(500).end('record exists')
             return s.end(map.set(data.id, body))
         case 'PATCH':
@@ -68,9 +70,23 @@ function Api(r, s, data) {
     }
 }
 
-export default function midfunc(r, s, data) {
-    if(!r.server.db) r.server.db = new Supramap()
-    switch(r.url) {
+export default async function db(r, s, data) {
+    //console.log(`${JSON.stringify(r.headers)} ${r.method} ${r.url} ${data}`)
+    if (!r.server.db) {
+        r.server.db = new Supramap()
+        let dirname = new URL(import.meta.url).pathname.split('/').slice(0, -1).join('/').slice(1)
+        if (process.platform !== 'win32')
+            dirname = '/' + dirname
+        for (const model of readdirSync(dirname + '/functions')) {
+            if (!model.endsWith('.mjs')) continue
+            let furl = 'file://' + dirname + '/functions/' + model
+            console.log('loading middleware: ' + furl)
+            let f = await import(furl);
+            this.middleware.unshift(f.default);
+        }
+        this.middleware.push((r, s) => s.writeHead(404).end())
+    }
+    switch (r.url) {
         case '/_token':
             return Token(r, s)
         case '/_logout':

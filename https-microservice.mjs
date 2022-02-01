@@ -27,8 +27,6 @@ class HTTPSServer extends Server {
                 });
             });
         });
-        // check middleware directory
-        this.getMiddleware()
     }
     use(farr) {
         this.middleware = [...farr, (r, s) => s.writeHead(404).end()];
@@ -43,8 +41,8 @@ class HTTPSServer extends Server {
             console.log('loading middleware: ' + furl)
             let f = await import(furl);
             this.middleware.unshift(f.default);
-            console.log(this.middleware)
         }
+        this.middleware.push((r, s) => s.writeHead(404).end())
     }
 }
 
