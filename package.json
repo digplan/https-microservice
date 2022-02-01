@@ -5,5 +5,9 @@
     "author": "",
     "main": "https-microservice.js",
     "bin": "./test.mjs",
-    "version": "1.0.3"
+    "version": "1.0.3",
+    "dependencies": {
+        "jwt-tiny": "^1.0.2",
+        "supramap": "^0.0.1"
+    }
 }

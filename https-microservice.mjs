@@ -4,8 +4,8 @@ import { Server, get } from 'node:https';
 class HTTPSServer extends Server {
     middleware = [];
     constructor() {
-        let dirname = new URL(import.meta.url).pathname.split('/').slice(0, -1).join('/').slice(1)
-        if(process.platform !== 'win32')
+        const dirname = new URL(import.meta.url).pathname.split('/').slice(0, -1).join('/').slice(1)
+        if (process.platform !== 'win32')
             dirname = '/' + dirname
         super({
             key: readFileSync(`${dirname}/keys/key.pem`),
@@ -28,18 +28,23 @@ class HTTPSServer extends Server {
             });
         });
         // check middleware directory
-        readdirSync(`${dirname}/middleware`).forEach((f) => {
-            const arrf = []
-            if (f.endsWith('.mjs')) {
-                import(`${dirname}/middleware/${f}`).then((m) => {
-                    arrf.push(m.default);
-                })
-            }
-            this.use(arrf)
-        })
+        this.getMiddleware()
     }
     use(farr) {
         this.middleware = [...farr, (r, s) => s.writeHead(404).end()];
+    }
+    async getMiddleware() {
+        let dirname = new URL(import.meta.url).pathname.split('/').slice(0, -1).join('/').slice(1)
+        if (process.platform !== 'win32')
+            dirname = '/' + dirname
+        for (const model of readdirSync(dirname + '/middleware')) {
+            if (!model.endsWith('.mjs')) continue
+            let furl = 'file://' + dirname + '/middleware/' + model
+            console.log('loading middleware: ' + furl)
+            let f = await import(furl);
+            this.middleware.unshift(f.default);
+            console.log(this.middleware)
+        }
     }
 }
 
