@@ -50,15 +50,17 @@ function Api(r, s, data) {
     const key = `${table}:${record}`
     switch (r.method) {
         case 'GET':
-            return s.end(this.dbs[db].get[key])
+            return s.end(map.get[key])
         case 'POST':
             if(map.has(data.id))
-                return s.setHeader()
-            return s.end(this.dbs[db].set(data.id, body))
+                return s.writeHead(500).end('record exists')
+            return s.end(map.set(data.id, body))
         case 'PATCH':
-            return s.end(this.dbs[db].set(data.id, body))
+            if (!map.has(data.id))
+                return s.writeHead(500).end('record exists')
+            return s.end(map.set(data.id, body))
         case 'DELETE':
-            return s.end(this.dbs[db].delete(body.id))
+            return s.end(map.delete(body.id))
         case 'PUT':
         // TODO
         default:
