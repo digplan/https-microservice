@@ -4,7 +4,7 @@ import { Server, get } from 'node:https';
 class HTTPSServer extends Server {
     middleware = [];
     constructor() {
-        const dirname = new URL(import.meta.url).pathname.split('/').slice(0, -1).join('/').slice(1)
+        let dirname = new URL(import.meta.url).pathname.split('/').slice(0, -1).join('/').slice(1)
         if (process.platform !== 'win32')
             dirname = '/' + dirname
         super({
