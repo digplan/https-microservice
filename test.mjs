@@ -4,6 +4,12 @@ import { HTTPSServer, HTTPSClient } from "./https-microservice.mjs"
 const server = new HTTPSServer()
 await server.getMiddleware()
 console.log(server.middleware)
+
+import { Supramap } from 'supramap'
+const map = new Supramap()
+await map.loadFunctions()
+
+server.db = map
 server.listen(3000)
 console.log('\x1b[32m%s\x1b[0m', 'Listening on https://localhost:3000/')
 
