@@ -52,7 +52,7 @@ function Api(r, s, data) {
             if (map.has(key))
                 return s.end(map.get[key])
             if (db.functions[key])
-                return s.end(db.functions[key](data))
+                return s.end(db.functions[key]())
         case 'POST':
             if (map.has(data.id))
                 return s.writeHead(500).end('record exists')
@@ -73,18 +73,9 @@ function Api(r, s, data) {
 export default async function db(r, s, data) {
     //console.log(`${JSON.stringify(r.headers)} ${r.method} ${r.url} ${data}`)
     if (!r.server.db) {
-        r.server.db = new Supramap()
-        let dirname = new URL(import.meta.url).pathname.split('/').slice(0, -1).join('/').slice(1)
-        if (process.platform !== 'win32')
-            dirname = '/' + dirname
-        for (const model of readdirSync(dirname + '/functions')) {
-            if (!model.endsWith('.mjs')) continue
-            let furl = 'file://' + dirname + '/functions/' + model
-            console.log('loading middleware: ' + furl)
-            let f = await import(furl);
-            this.middleware.unshift(f.default);
-        }
-        this.middleware.push((r, s) => s.writeHead(404).end())
+        const map = new Supramap()
+        await map.loadFunctions()
+        r.server.db = map
     }
     switch (r.url) {
         case '/_token':

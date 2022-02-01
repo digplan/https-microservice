@@ -1,5 +1,5 @@
 # https-microservice
-![version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=js&type=6&v=1.0.2&x2=0)
+[![npm version](https://badge.fury.io/js/https-microservice.svg)](https://badge.fury.io/js/https-microservice)
 ![size](http://img.badgesize.io/digplan/https-microservice/master/https-microservice.mjs)
 
 Zero config https server
