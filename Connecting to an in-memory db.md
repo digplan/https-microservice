@@ -1,12 +1,14 @@
-GET
+## GET
   /token HTTP BASIC
+  
   /logout
+  
   /<record-id>
-POST
+## POST
   / HEADER data
-PUT
+## PUT
   /<funcname> HEADER data
-DELETE
+## DELETE
   / HEADER data
-PATCH
+## PATCH
   / HEADER data
