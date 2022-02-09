@@ -1,68 +1,68 @@
 import { readFileSync, readdirSync } from 'node:fs';
-import { Server, get } from 'node:https';
+import { Server } from 'node:https';
 
 class HTTPSServer extends Server {
-    middleware = [];
-    constructor() {
-        let dirname = new URL(import.meta.url).pathname.split('/').slice(0, -1).join('/').slice(1)
-        if (process.platform !== 'win32')
-            dirname = '/' + dirname
+    middleware = []
+    functions = {}
+    constructor(key, cert) {
         super({
-            key: readFileSync(`${dirname}/keys/key.pem`),
-            cert: readFileSync(`${dirname}/keys/cert.pem`),
-        });
+            key: readFileSync(key),
+            cert: readFileSync(cert),
+        })
         this.on('request', (r, s) => {
-            let data = '';
+            let data = ''
             r.on('data', (s) => {
-                data += s.toString();
-            });
+                data += s.toString()
+            })
             r.on('end', () => {
-                try {
-                    data = JSON.parse(data);
-                } catch (e) { }
+                s.endJSON = (obj) => {
+                    s.end(JSON.stringify(obj))
+                }
+                try { data = JSON.parse(data) } catch (e) { }
                 r.server = this
                 this.middleware.some((f) => {
-                    const stop = f(r, s, data);
-                    return stop;
-                });
-            });
-        });
+                    return f(r, s, data)
+                })
+                if (this.functions[r.url]) {
+                    let res
+                    try {
+                        res = this.functions[r.url](r, s, data)
+                    } catch(e) {
+                        res = new this.functions[r.url](r, s, data)
+                    }
+                    return res
+                }
+                return this.functions['/404'](r, s)
+            })
+        })
     }
-    use(farr) {
-        this.middleware = [...farr, (r, s) => s.writeHead(404).end()];
-    }
-    async getMiddleware() {
-        let dirname = new URL(import.meta.url).pathname.split('/').slice(0, -1).join('/').slice(1)
-        if (process.platform !== 'win32')
-            dirname = '/' + dirname
-        for (const model of readdirSync(dirname + '/middleware')) {
+    async getMiddleware(func_folder) {
+        const middleware_folder = `${func_folder}/middleware`
+        for (const model of readdirSync(middleware_folder)) {
             if (!model.endsWith('.mjs')) continue
-            let furl = 'file://' + dirname + '/middleware/' + model
-            let f = await import(furl);
-            this.middleware.unshift(f.default);
+            let f = await import('file://' + middleware_folder + '/' + model)
+            this.middleware.unshift(f.default)
         }
-        let NotFound = (r, s) => s.writeHead(404).end()
-        this.middleware.push(NotFound)
+        for (const model of readdirSync(func_folder)) {
+            if (!model.endsWith('.mjs')) continue
+            const name = model.split('.')[0]
+            let f = await import('file://' + func_folder + '/' + model)
+            this.functions[`/${name}`] = f.default
+        }
+        console.log(this.middleware)
+        console.log(this.functions)
     }
 }
 
-class HTTPSClient {
-    fetch(url, options = {}) {
-        return new Promise((resolve, reject) => {
-            get(url, options, (res, socket) => {
-                let data = '';
-                res.on('connect', (res, socket, head) => {
-                    socket.write('okay');
-                });
-                res.on('data', (d) => {
-                    data += d;
-                });
-                res.on('end', () => {
-                    resolve(data);
-                });
-            });
-        });
+class Route {
+    constructor(r, s, data) {
+        try {
+           this[r.method](r, s, data)
+        } catch(e) {
+           s.writeHead(405).end()    
+           return this
+        }
     }
 }
 
-export { HTTPSServer, HTTPSClient };
+export { HTTPSServer, Route };
