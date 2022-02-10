@@ -3,3 +3,7 @@
 ![size](http://img.badgesize.io/digplan/https-microservice/master/https-microservice.mjs)
 
 Zero config https server
+
+####npx https-microservice
+Copy middleware, routes into your working directory.
+Keys folder one dir up
