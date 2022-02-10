@@ -1,4 +1,4 @@
-import { Route } from '../https-microservice.mjs' 
+import { Route } from 'https-microservice/https-microservice.mjs' 
 
 export default class api2 extends Route {
     get(r, s, data) {
