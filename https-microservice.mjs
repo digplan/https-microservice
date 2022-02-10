@@ -1,6 +1,10 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { Server } from 'node:https';
 
+try {
+  import { a } from '.'
+} catch(e) {}
+
 class HTTPSServer extends Server {
     middleware = []
     routes = {}
