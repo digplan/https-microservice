@@ -4,7 +4,7 @@
     "url": "http://github.com/digplan/https-microservice",
     "author": "",
     "main": "https-microservice.js",
-    "bin": "./test.mjs",
+    "bin": "./start.mjs",
     "version": "1.2.0",
     "dependencies": {
     },
