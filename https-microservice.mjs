@@ -1,17 +1,19 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { Server } from 'node:https';
 
-try {
-  import { a } from '.'
-} catch(e) {}
+let dir = process.cwd()
+let dir_key = `${dir}/../keys/key.pem`
+let dir_cert = `${dir}/../keys/cert.pem`
+let dir_middleware = `file://${dir}/middleware`
+let dir_routes = `file://${dir}/routes`
 
 class HTTPSServer extends Server {
     middleware = []
     routes = {}
     constructor(key, cert) {
         super({
-            key: readFileSync(key),
-            cert: readFileSync(cert),
+            key: readFileSync(dir_key),
+            cert: readFileSync(dir_cert),
         })
         this.on('request', (r, s) => {
             try {
@@ -49,18 +51,14 @@ class HTTPSServer extends Server {
     async getMiddleware() {
         for (const model of readdirSync('./middleware')) {
             if (!model.endsWith('.mjs')) continue
-            let f = await import(`./middleware/${model}`)
+            let f = await import(`${dir_middleware}/${model}`)
             this.middleware.unshift(f.default)
         }
         for (const model of readdirSync('./routes')) {
             if (!model.endsWith('.mjs')) continue
-            const name = model.split('.')[0], path = `./routes/${model}`
-            let f = (await import(path)).default
-            //if (typeof f === 'function') {
+            const name = model.split('.')[0]
+            let f = (await import(`${dir_routes}/${model}`)).default
             this.routes[`/${name}`] = f
-            //}   else {
-            this.routes[`/${name}`] = f
-            // }
         }
     }
 }
@@ -68,7 +66,6 @@ class HTTPSServer extends Server {
 class Route {
     constructor(r, s, data) { }
     route(r, s, data) {
-        console.log('routing ' + this[r.method])
         this[r.method](r, s, data)
     }
 }
