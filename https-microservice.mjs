@@ -30,6 +30,7 @@ class HTTPSServer extends Server {
                     this.middleware.some((f) => {
                         return f(r, s, data)
                     })
+                    if(r.url == '/') r.url = '/index.mjs'
                     const route = this.routes[r.url]
                     if (!route)
                         return this.routes['/404'](r, s, data)
