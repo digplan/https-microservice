@@ -5,5 +5,4 @@
 Zero config https server
 
 ####npx https-microservice
-Copy middleware, routes into your working directory.
-Keys folder one dir up
+Copy middleware, routes into your working directory

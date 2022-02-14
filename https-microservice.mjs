@@ -50,7 +50,11 @@ class HTTPSServer extends Server {
         )
     }
     async getMiddleware() {
-        for (const model of readdirSync('./middleware')) {
+        const mfiles = []
+        for (const model of readdirSync('./middleware'))
+            mfiles.push(model)
+        mfiles.sort((a, b) => a.localeCompare(b))
+        for (const model of mfiles) {
             if (!model.endsWith('.mjs')) continue
             let f = await import(`${dir_middleware}/${model}`)
             this.middleware.unshift(f.default)
