@@ -34,7 +34,7 @@ class HTTPSServer extends Server {
                         return f(r, s, data)
                     })
                     if (r.url == '/') r.url = '/index.mjs'
-                    const route = this.routes[r.url.split('/')[1]]
+                    const route = this.routes['/' + r.url.split('/')[1]]
                     if (this.debug) console.log(`route: ${r.url}`)
                     if (!route)
                         return this.routes['/404'](r, s, data)
