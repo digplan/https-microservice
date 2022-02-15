@@ -5,4 +5,5 @@
 Zero config https server
 
 ####npx https-microservice
-Copy middleware, routes into your working directory
+Add middleware and routes folders
+> npx https-microservice debug

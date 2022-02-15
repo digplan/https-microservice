@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { HTTPSServer } from "./https-microservice.mjs"
-const server = new HTTPSServer('keys/key.pem', 'keys/cert.pem')
+const server = new HTTPSServer()
 await server.getMiddleware()
 
 console.log(server.middleware, server.routes)

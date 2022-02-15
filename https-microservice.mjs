@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { Server } from 'node:https';
+import { env } from 'node:process';
 
 let dir = process.cwd()
 let dir_key = `${dir}/../keys/key.pem`
@@ -10,6 +11,7 @@ let dir_routes = `file://${dir}/routes`
 class HTTPSServer extends Server {
     middleware = []
     routes = {}
+    debug = process.env.debug
     constructor(key, cert) {
         super({
             key: readFileSync(dir_key),
@@ -17,6 +19,7 @@ class HTTPSServer extends Server {
         })
         this.on('request', (r, s) => {
             try {
+                if(debug) console.log(`${r.method} ${r.url}`)
                 let data = ''
                 r.on('data', (s) => {
                     data += s.toString()
