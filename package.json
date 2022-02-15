@@ -5,7 +5,7 @@
     "author": "",
     "main": "https-microservice.js",
     "bin": "./start.mjs",
-    "version": "1.2.6",
+    "version": "1.2.7",
     "scripts" : {
         "start": "node start.mjs"
     }
