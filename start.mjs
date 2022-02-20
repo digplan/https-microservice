@@ -2,7 +2,8 @@
 
 import { HTTPSServer } from "./https-microservice.mjs"
 const server = new HTTPSServer()
-await server.getMiddleware()
+await server.getMiddlewareFolders()
+await server.getMiddlewareFile()
 
 console.log(server.middleware, server.routes)
 server.listen(3000)

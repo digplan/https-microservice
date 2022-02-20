@@ -30,24 +30,25 @@ class HTTPSServer extends Server {
                     }
                     try { data = JSON.parse(data) } catch (e) { }
                     r.server = this
-                    if(!this.usesFolders){
-                        
-                    }
+
                     this.middleware.some((f) => {
                         if (this.debug) console.log(`middleware: ${f.name}`)
                         return f(r, s, data)
                     })
-                    if (r.url == '/') r.url = '/index.mjs'
+
+                    if (r.url == '/') r.url = '/index'
                     const route = this.routes['/' + r.url.split('/')[1]]
                     if (this.debug) console.log(`route: ${r.url}`)
                     if (!route)
-                        return this.routes['/404'](r, s, data)
+                        return this.routes['/404'] ? this.routes['/404'](r, s, data) : s.writeHead(404).end()
+
                     if (route.toString().startsWith('class')) {
                         const f = new route(), method = r.method.toLowerCase()
                         if (!f[method])
                             return s.writeHead(405).end()
                         return f[method](r, s, data)
                     }
+
                     return route(r, s, data)
                 })
             } catch (e) {
@@ -57,7 +58,7 @@ class HTTPSServer extends Server {
         }
         )
     }
-    async getMiddleware() {
+    async getMiddlewareFolders() {
         const mfiles = []
         if (existsSync('./middleware')) {
             for (const model of readdirSync('./middleware'))
@@ -77,14 +78,17 @@ class HTTPSServer extends Server {
                 this.routes[`/${name}`] = f
             }
         }
-        this.usesFolders = true
     }
-    async getRouteMjs() {
-        const routes = await import(routes_file)
-        for (const middleware of Object.keys(routes).filter(n => n.match(/^_/))) {
-            this.middleware[middleware](r, s, data)
+    async getMiddlewareFile() {
+        if (!existsSync(routes_file)) return console.log('no routes.mjs file: ' + routes_file)
+        const routesf = (await import(`file://${routes_file}`)).default
+        for (let name of Object.keys(routesf)) {
+            if(name.startsWith('_')) {
+                this.middleware.unshift(routesf[name])
+            } else {
+                this.routes[name] = routesf[name]
+            }
         }
-        return routes[r.url] ? routes[r.url](r, s, data, server) : s.writeHead(404).end()
     }
 }
 
