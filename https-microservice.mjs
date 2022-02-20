@@ -6,6 +6,7 @@ let dir_key = `${dir}/../keys/key.pem`
 let dir_cert = `${dir}/../keys/cert.pem`
 let dir_middleware = `file://${dir}/middleware`
 let dir_routes = `file://${dir}/routes`
+let routes_file = `${dir}/routes.mjs`
 
 class HTTPSServer extends Server {
     middleware = []
@@ -27,6 +28,9 @@ class HTTPSServer extends Server {
                     }
                     try { data = JSON.parse(data) } catch (e) { }
                     r.server = this
+                    if(!this.usesFolders){
+                        
+                    }
                     this.middleware.some((f) => {
                         return f(r, s, data)
                     })
@@ -61,6 +65,14 @@ class HTTPSServer extends Server {
             let f = (await import(`${dir_routes}/${model}`)).default
             this.routes[`/${name}`] = f
         }
+        this.usesFolders = true
+    }
+    async getRouteMjs() {
+        const routes = await import(routes_file)
+        for (const middleware of Object.keys(routes).filter(n => n.match(/^_/))) {
+            this.middleware[middleware](r, s, data)
+        }
+        return routes[r.url] ? routes[r.url](r, s, data, server) : s.writeHead(404).end()
     }
 }
 
