@@ -5,7 +5,7 @@ let dir = process.cwd()
 let dir_key = `${dir}/../keys/key.pem`
 let dir_cert = `${dir}/../keys/cert.pem`
 let dir_middleware = `file://${dir}/middleware`
-let dir_routes = `file://${dir}/routes`
+let dir_routes = `file://${dir}/server/routes`
 let routes_file = `${dir}/routes.mjs`
 
 class HTTPSServer extends Server {
