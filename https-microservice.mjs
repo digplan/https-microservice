@@ -42,13 +42,13 @@ class HTTPSServer extends Server {
                     if (!route)
                         return this.routes['/404'] ? this.routes['/404'](r, s, data) : s.writeHead(404).end()
 
-                    if (route.toString().startsWith('class')) {
-                        const f = new route(), method = r.method.toLowerCase()
-                        if (!f[method])
+                    if (JSON.stringify(route).startsWith('{')) {
+                        if (!route[r.method])
                             return s.writeHead(405).end()
-                        return f[method](r, s, data)
+                        return route[r.method](r, s, data)
                     }
 
+                    console.log(route.toString())
                     return route(r, s, data)
                 })
             } catch (e) {
