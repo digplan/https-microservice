@@ -1,3 +1,4 @@
+import { NoFoodRounded } from '@mui/icons-material';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { Server } from 'node:https';
 
@@ -7,6 +8,19 @@ let dir_cert = `${dir}/../keys/cert.pem`
 let dir_middleware = `file://${dir}/middleware`
 let dir_routes = `file://${dir}/routes`
 const routes_file = `${dir}/server/routes.mjs`
+
+const jsn = (s, data) => {
+    s.endJSON = (obj) => {
+        s.end(JSON.stringify(obj))
+    }
+    try { data = JSON.parse(data) } catch (e) { }
+    return data
+}
+
+const found = (routes, url) => {
+    const sroute = '/' + url.split('/')[1]
+    return routes[sroute] || routes['/404'] || false
+}
 
 class HTTPSServer extends Server {
     middleware = []
@@ -25,31 +39,16 @@ class HTTPSServer extends Server {
                     data += s.toString()
                 })
                 r.on('end', () => {
-                    s.endJSON = (obj) => {
-                        s.end(JSON.stringify(obj))
-                    }
-                    try { data = JSON.parse(data) } catch (e) { }
-                    r.server = this
-
-                    this.middleware.some((f) => {
-                        if (this.debug) console.log(`middleware: ${f.name}`)
-                        return f(r, s, data)
-                    })
-
-                    if (r.url == '/') r.url = '/index'
-                    const route = this.routes['/' + r.url.split('/')[1]]
-                    if (this.debug) console.log(`route: ${r.url}`)
-                    if (!route)
-                        return this.routes['/404'] ? this.routes['/404'](r, s, data) : s.writeHead(404).end()
-
-                    if (JSON.stringify(route).startsWith('{')) {
-                        if (!route[r.method])
-                            return s.writeHead(405).end()
-                        return route[r.method](r, s, data)
-                    }
-
-                    console.log(route.toString())
-                    return route(r, s, data)
+                    data = jsn(s, data)
+                    this.middleware.some((f) => f(r, s, data))
+                    let route = found(this.routes, r.url)
+                    if (!route) return s.writeHead(404).end()
+                    if (typeof route === 'function')
+                        return route(r, s, data, this)
+                    else if(route[r.method])
+                        return route[r.method](r, s, data, this)
+                    else
+                        return s.writeHead(405).end()
                 })
             } catch (e) {
                 console.log(e)
@@ -83,7 +82,7 @@ class HTTPSServer extends Server {
         if (!existsSync(routes_file)) return console.log('no routes.mjs file: ' + routes_file)
         const routesf = (await import(`file://${routes_file}`)).default
         for (let name of Object.keys(routesf)) {
-            if(name.startsWith('_')) {
+            if (name.startsWith('_')) {
                 this.middleware.unshift(routesf[name])
             } else {
                 this.routes[name] = routesf[name]
@@ -92,11 +91,4 @@ class HTTPSServer extends Server {
     }
 }
 
-class Route {
-    constructor(r, s, data) { }
-    route(r, s, data) {
-        this[r.method](r, s, data)
-    }
-}
-
-export { HTTPSServer, Route }
+export { HTTPSServer }
